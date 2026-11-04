@@ -1,0 +1,17 @@
+package: community.lazycat.app.koillection
+name: Koillection
+description: "Self-hosted collection manager for books, games, stamps, coins and anything else you collect."
+version: 1.8.5
+min_os_version: "1.5.0"
+homepage: https://github.com/koillection/koillection
+author: Benjamin Jonard
+license: MIT
+permissions:
+  required: []
+locales:
+  zh:
+    name: Koillection
+    description: "收藏品管理服务：书籍、游戏、邮票、钱币等任何收藏的登记与检索。"
+  en:
+    name: Koillection
+    description: "Self-hosted collection manager for books, games, stamps, coins and anything else you collect."

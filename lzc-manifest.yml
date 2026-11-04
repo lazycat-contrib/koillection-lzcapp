@@ -1,0 +1,57 @@
+application:
+  subdomain: koillection
+  multi_instance: false
+  # Koillection has its own login and user accounts, so it authenticates itself.
+  public_path:
+    - /
+  upstreams:
+    - location: /
+      backend: http://koillection:80/
+services:
+  koillection:
+    # upstream: koillection/koillection:1.8.5
+    image: docker.1ms.run/koillection/koillection:1.8.5
+    environment:
+      - APP_ENV=prod
+      - APP_DEBUG=0
+      # Pinned so sessions and JWTs stay valid across container recreation
+      # (the image would otherwise generate a fresh secret each time).
+      - APP_SECRET={{ printf "%x" (stable_secret "app_secret") }}
+      # We terminate TLS at the platform entry, so the app must build https URLs.
+      - HTTPS_ENABLED=1
+      - PHP_TZ=Asia/Shanghai
+      - UPLOAD_MAX_FILESIZE=20M
+      - PHP_MEMORY_LIMIT=512M
+      # Behind the platform reverse proxy.
+      - SYMFONY_TRUSTED_PROXIES=private_ranges
+      - DB_DRIVER=pdo_pgsql
+      - DB_NAME=koillection
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=koillection
+      - DB_PASSWORD={{ printf "%x" (stable_secret "db_password") }}
+      - DB_VERSION=16
+    binds:
+      - /lzcapp/var/uploads:/uploads
+    depends_on:
+      - db
+  db:
+    image: docker.1ms.run/library/postgres:16
+    environment:
+      - POSTGRES_DB=koillection
+      - POSTGRES_USER=koillection
+      - POSTGRES_PASSWORD={{ printf "%x" (stable_secret "db_password") }}
+    binds:
+      - /lzcapp/var/pgdata:/var/lib/postgresql/data
+usage: |
+  Koillection 是收藏品管理服务：登记与检索书籍、游戏、邮票、钱币等任何收藏，
+  支持自定义字段、分类、标签与图片上传。
+
+  首次打开会进入「首次连接」页面，填写用户名、邮箱与密码即可创建管理员账号，
+  之后可在管理后台添加其他用户。没有内置口令。
+
+  说明：
+    - 应用自带账号体系，直接对外开放由 Koillection 自己的登录页鉴权，所以使用 public_path。
+    - 上传的图片存放在 uploads 目录，随应用持久化保留。
+    - 已启用 HTTPS 模式（平台入口负责 TLS），并使用 PostgreSQL 16 存储数据。
+    - 未做实机验证。
