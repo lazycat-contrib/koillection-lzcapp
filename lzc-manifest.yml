@@ -36,7 +36,8 @@ services:
     depends_on:
       - db
   db:
-    image: docker.1ms.run/library/postgres:16
+    # upstream: library/postgres:16.15
+    image: docker.1ms.run/library/postgres:16.15
     environment:
       - POSTGRES_DB=koillection
       - POSTGRES_USER=koillection
